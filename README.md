@@ -1,3 +1,4 @@
+# Download the folder stock-sentiment and open in IDE
 # MAKE SURE TO 
 pip install flask yfinance requests finnhub nltk scikit-learn pandas
 # Open terminal in IDE (VS Code is preferred)
