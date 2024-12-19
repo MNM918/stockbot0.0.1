@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockBot Sentiment Analysis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">StockBot Sentiment Analysis</h1>
+        <form id="tickerForm" class="my-4">
+            <div class="mb-3">
+                <label for="ticker" class="form-label">Enter Stock Ticker</label>
+                <input type="text" id="ticker" class="form-control" placeholder="e.g., AAPL, TSLA" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Analyze</button>
+        </form>
+
+        <div id="result" class="mt-4"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#tickerForm').on('submit', function (e) {
+                e.preventDefault();
+                const ticker = $('#ticker').val().trim().toUpperCase();
+                if (!ticker) return alert('Please enter a valid stock ticker.');
+
+                $('#result').html('<p class="text-center">Fetching data...</p>');
+
+                $.ajax({
+                    url: `/analyze?ticker=${ticker}`,
+                    method: 'GET',
+                    success: function (response) {
+                        let buys = 0, sells = 0, neutrals = 0;
+                        let resultHtml = '<h2 class="text-center">Analysis Results</h2><ul class="list-group">';
+
+                        response.forEach(item => {
+                            resultHtml += `<li class="list-group-item">Headline: ${item.headline} <br> Action: ${item.action}</li>`;
+                            if (item.action === 'buy') buys++;
+                            else if (item.action === 'sell') sells++;
+                            else neutrals++;
+                        });
+
+                        resultHtml += '</ul>';
+
+                        resultHtml += `<p class="mt-4"><strong>Summary:</strong><br>
+                            Buys: ${buys}<br>
+                            Sells: ${sells}<br>
+                            Neutrals: ${neutrals}</p>`;
+
+                        let ultimate;
+                        if (buys > sells && buys > neutrals) ultimate = 'Buy';
+                        else if (sells > buys && sells > neutrals) ultimate = 'Sell';
+                        else ultimate = 'Neutral';
+
+                        resultHtml += `<h3 class="text-center text-success">Ultimate Recommendation: ${ultimate}</h3>`;
+
+                        $('#result').html(resultHtml);
+                    },
+                    error: function () {
+                        $('#result').html('<p class="text-danger">Failed to fetch data. Please try again later.</p>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
